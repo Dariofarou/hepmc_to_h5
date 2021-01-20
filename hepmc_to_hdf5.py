@@ -249,11 +249,17 @@ def hepmc_to_hdf5(input_files,output='events.h5',dtype='PTEP',truth_labels=-1):
             particles=np.zeros(dim+1)
             particles[:len(e)]=e 
             particles[-1]=L[i]
-            events.append(particles)
+            events.append(particles)   
+    shuffle(events)
     data=np.stack(events)
     print('...extracted data shape : {}'.format(data.shape))
-    print('...shuffling and saving events to {}'.format(output))    
-    shuffle(events)
+    print('...shuffling and saving events to {}'.format(output)) 
+    # if data.shape[0]>1000:
+    #     nchunk=1000
+    # else:
+    #     nchunk=data.shape[0]
+    # chunks=(nchunk,data.shape[1])
+    # chunks=None
     with h5py.File(output,'w', libver='latest') as f:
         dset=f.create_dataset('data',data=data, compression='gzip', compression_opts=9)
         dset.attrs.create(name='shape',data=data.shape)
