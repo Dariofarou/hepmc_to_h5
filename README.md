@@ -1,5 +1,5 @@
 # README
-```hepmc_to_h5``` extracts final state particles from ***HepMC*** files and stores them into a single ***hdf5*** file in a format similar to the R&D Dataset formats for the LHC Olympics 2020 Anomaly Detection Challenge. 
+```hepmc_to_h5``` extracts final state particles from *HepMC2/HepMC3* files and saves them into a single *hdf5* file in a format similar to the R&D dataset formats for the LHC Olympics 2020 Anomaly Detection Challenge. 
 
 Each event is described by a flattened array of particle 'detector' coordinates in three possible formats:  
 
