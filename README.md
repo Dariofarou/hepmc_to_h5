@@ -3,9 +3,11 @@ Extracts final state particles from HepMC files and stores into hdf5 file.
 
 The output data has a similar format as the R&D Dataset from the LHC Olympics 2020 Anomaly Detection Challenge. Each event is described by a flattened array of particle (hadrons) coordinates in three possible formats:  
 
-  PTEP:  (pT, η, φ, pT, η, φ, ...) \n
-  PTEPM: (pT, η, φ, M, pT, η, φ, M, ...)\n 
-  EP:    (E, px, py, pz, E, px, py, pz, ...)\n
+PTEP:  (pT, η, φ, pT, η, φ, ...) 
+  
+PTEPM: (pT, η, φ, M, pT, η, φ, M, ...)
+  
+EP:    (E, px, py, pz, E, px, py, pz, ...)
  
 Event arrays are zero padded to a fixed size M, set by the event in the sample with the largest number of particles. The truth label of each sample file can be appended at the end of each event array. The complete dataset stored in the h5 output is a numpy array of shape (Nevents, M) or (Nevents, M+1) if the truth label is included.
 
