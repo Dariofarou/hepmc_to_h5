@@ -1,9 +1,7 @@
 # hepmc_to_h5
 Extracts final state particles from HepMC files and stores into hdf5 file.
 
-The output data has a similar format as the R&D Dataset from the LHC Olympics 2020 Anomaly Detection Challenge. 
-
-Each event is described by a flattened array of particle (hadrons) coordinates in three possible formats:  
+The output data has a similar format as the R&D Dataset from the LHC Olympics 2020 Anomaly Detection Challenge. Each event is described by a flattened array of particle (hadrons) coordinates in three possible formats:  
 
   PTEP:  (pT, η, φ, pT, η, φ, ...) 
   PTEPM: (pT, η, φ, M, pT, η, φ, M, ...) 
