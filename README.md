@@ -26,12 +26,12 @@ Example: To extract particles with *(pT, η, φ, M)* coordinates from three hepm
 - *events_2.hepmc* (signal process)
 - *events_3.hepmc* (another background process) 
 
-and store into a single hdf5 file *events.h5* with truth bits, just run:
+and store into *events.h5* with truth bits, just run:
 ```bash
 python hepmc_to_hdf5.py events_1.hepmc events_2.hepmc events_3.hepmc --truth 0 1 0 --output events.h5 --dtype PTEPM
 ```
-To completely omit truth labels in the output simply remove the ```--truth``` arguments above. 
-For more info: 
+To completely remove truth labels from the output simply remove the ```--truth``` arguments above. 
+For more information: 
 ```bash
 hepmc_to_hdf5.py --help
 ```
