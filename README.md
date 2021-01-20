@@ -16,9 +16,13 @@ Event arrays are zero padded to a fixed size M, set by the event in the sample w
 # Requirements: 
 h5py, pyje
 
-# usage:
+# Usage:
 ```
 hepmc_to_hdf5.py files [files ...] [-h] [--truth TRUTH ...] [--output OUTPUT] [--dtype DTYPE]
+```
+for example to extract final state hadrons from three hepmc files *events_1.hepmc* (signal), events_2.hepmc (background), events_3.hepmc (another background) and store into a single hdf5 file *events.h5* with truth lables (s=1,b=0) just do:
+```
+python hepmc_to_hdf5.py events_1.hepmc events_2.hepmc events_3.hepmc --truth 1 0 0 --output events.h5 --dtype PTEPM
 ```
 
 for more info: 
