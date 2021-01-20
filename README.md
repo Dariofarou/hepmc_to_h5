@@ -3,7 +3,7 @@
 
 Each event is described by a flattened array of particle 'detector' coordinates in three possible formats:  
 
- - ```PTEP```:  (pT, η, φ, pT, η, φ, pT, η, φ,...) 
+ - ```COMPACT```:  (pT, η, φ, pT, η, φ, pT, η, φ,...) 
   
  - ```PTEPM```: (pT, η, φ, M, pT, η, φ, M,pT, η, φ, M,...)
   
