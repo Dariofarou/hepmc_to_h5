@@ -1,9 +1,9 @@
 # README
-```hepmc_to_h5``` Extracts final state particles from HepMC files and stores into hdf5 file.
+```hepmc_to_h5``` extracts final state particles from a set of ***HepMC*** files and stores them in a compact format into a single ***hdf5** file.
 
 The output data has a similar format as the R&D Dataset from the LHC Olympics 2020 Anomaly Detection Challenge. Each event is described by a flattened array of particle (hadrons) coordinates in three possible formats:  
 
-  ```PTEP```:  ($p_T$, η, φ, pT, η, φ, pT, η, φ,...) 
+  ```PTEP```:  (pT, η, φ, pT, η, φ, pT, η, φ,...) 
   
   ```PTEPM```: (pT, η, φ, M, pT, η, φ, M,pT, η, φ, M,...)
   
@@ -17,15 +17,15 @@ Event arrays are zero padded to a fixed size M, set by the event in the sample w
 h5py, pyje
 
 # Usage:
-```
+```bash
 hepmc_to_hdf5.py files [files ...] [-h] [--truth TRUTH ...] [--output OUTPUT] [--dtype DTYPE]
 ```
 for example to extract final state hadrons from three hepmc files *events_1.hepmc* (signal), events_2.hepmc (background), events_3.hepmc (another background) and store into a single hdf5 file *events.h5* with truth lables (s=1,b=0) just do:
-```
+```bash
 python hepmc_to_hdf5.py events_1.hepmc events_2.hepmc events_3.hepmc --truth 1 0 0 --output events.h5 --dtype PTEPM
 ```
 
 for more info: 
-```
+```bash
 hepmc_to_hdf5.py --help
 ```
