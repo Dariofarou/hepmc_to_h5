@@ -20,12 +20,11 @@ h5py, pyje
 ```bash
 hepmc_to_hdf5.py files [files ...] [-h] [--truth TRUTH ...] [--output OUTPUT] [--dtype DTYPE]
 ```
-For example, in order to extract final state hadrons from three hepmc files *events_1.hepmc* (signal process), events_2.hepmc (background process), events_3.hepmc (another background process) and store into a single hdf5 file *events.h5* with truth bits and *(pT, η, φ, M)* data format, just do:
+For example: in order to extract final state hadrons in *(pT, η, φ, M)* coordinates from three hepmc files *events_1.hepmc* (signal process), events_2.hepmc (background process), events_3.hepmc (another background process) and store into a single hdf5 file *events.h5* with truth bits, just do:
 ```bash
 python hepmc_to_hdf5.py events_1.hepmc events_2.hepmc events_3.hepmc --truth 1 0 0 --output events.h5 --dtype PTEPM
 ```
-
-for more info: 
+To omit truth labels simply remove the ```--truth``` arguments above. For more info: 
 ```bash
 hepmc_to_hdf5.py --help
 ```
