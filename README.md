@@ -1,5 +1,5 @@
 # README
-```hepmc_to_hdf5``` extracts final state particles from *HepMC2* or *HepMC3* files and saves them into a single *hdf5* file in a compact format similar to the R&D dataset of the [LHC Olympics 2020 Anomaly Detection Challenge](https://zenodo.org/record/2629073#.XKdewGXlRg0). 
+```hepmc_to_hdf5``` extracts final state particles (hadrons) from *HepMC2* or *HepMC3* files and saves them into a single *hdf5* file in a compact format similar to the R&D dataset of the [LHC Olympics 2020 Anomaly Detection Challenge](https://lhco2020.github.io/homepage/). 
 
 Each event is described by a flattened array of particle 'detector' coordinates in three possible formats:  
 
@@ -9,7 +9,7 @@ Each event is described by a flattened array of particle 'detector' coordinates 
   
  - ```EP```:    (E, px, py, pz, E, px, py, pz, E, px, py, pz,...)
  
-Event arrays are zero padded to a fixed size *M*, set by the event in the sample with the largest number of particles. The truth label of each sample file can be appended at the end of each event array. The complete dataset stored in the hdf5 output is a numpy array with shape *(Nevents, M)*, or *(Nevents, M+1)* if truth labels are  provided. Basic information about the data (shape, number of signal and background events, dtype, etc) are stored as dataset attributes. 
+Event arrays are zero padded to a fixed size *M*, set by the event in the sample with the largest number of particles. The truth label of each sample file can be appended at the end of each event array. The complete dataset is a numpy array with shape *(Nevents, M)*, or *(Nevents, M+1)* if truth labels are  provided. Basic information about the data (shape, number of signal and background events, dtype, etc) are stored as dataset attributes. 
 
 ***TODO: include vertex information (x,y,z,ct) and particle ID.*** 
 
