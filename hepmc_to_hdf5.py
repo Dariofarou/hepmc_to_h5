@@ -41,7 +41,7 @@ optional arguments:
   -h, --help                                        show this help message and exit
   --truth TRUTH [TRUTH ...], -t TRUTH [TRUTH ...]   optional list of truth labels for hepmc files
   --output OUTPUT, -o OUTPUT                        name of output file
-  --dtype DTYPE, -d DTYPE                           choose data type: PTEP (pT, η, φ, pT, η, φ, ...), 
+  --dtype DTYPE, -d DTYPE                           choose data type: COMPACT (pT, η, φ, pT, η, φ, ...), 
                                                                       PTEPM (pT, η, φ, M, pT, η, φ, M, ...)
                                                                       EP (E, px, py, pz, E, px, py, pz, ...)
 
@@ -209,7 +209,7 @@ def elapsed_time(t0):
 
 ################################################          
 
-def hepmc_to_hdf5(input_files,output='events.h5',dtype='PTEP',truth_labels=-1):
+def hepmc_to_hdf5(input_files,output='events.h5',dtype='COMPACT',truth_labels=-1):
     t=timer()
     dim=0; X=[]; L=[]
     for i,file in enumerate(input_files):
@@ -226,7 +226,7 @@ def hepmc_to_hdf5(input_files,output='events.h5',dtype='PTEP',truth_labels=-1):
                 mom['px']=p[0]; mom['py']=p[1]; mom['pz']=p[2]; mom['E']=p[3]
                 if dtype=='EP':
                     x+=list(mom[0])
-                elif dtype=='PTEP': 
+                elif dtype=='COMPACT': 
                     x+=list(ep2ptepm(mom)[0])[:3]
                 elif dtype=='PTEPM': 
                     x+=list(ep2ptepm(mom)[0])
@@ -278,7 +278,7 @@ parser = argparse.ArgumentParser()
 p1=parser.add_argument('--truth','-t', nargs='+', type=int, default=-1, help='optional list of truth labels for hepmc files...')
 p2=parser.add_argument('files', nargs='+', help='list hepmc files to be converted to h5...')
 p3=parser.add_argument('--output', '-o', default='events.h5', help='name of output file...')
-p4=parser.add_argument('--dtype', '-d',default='PTEP', help='choose one of three data types: PTEP (pT, η, φ, pT, η, φ, ...), PTEPM (pT, η, φ, M, pT, η, φ, M, ...), or EP (E, px, py, pz, E, px, py, pz, ...)')
+p4=parser.add_argument('--dtype', '-d',default='PTEP', help='choose one of three data types: COMPACT (pT, η, φ, pT, η, φ, ...), PTEPM (pT, η, φ, M, pT, η, φ, M, ...), or EP (E, px, py, pz, E, px, py, pz, ...)')
 
 FLAGS=parser.parse_args()
 truths=FLAGS.truth
