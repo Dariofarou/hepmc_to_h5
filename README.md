@@ -22,14 +22,14 @@ hepmc_to_hdf5.py files [files ...] [-h] [--truth TRUTH ...] [--nevents NEVENTS .
 
 Optional arguments:
 
- - ```--help,-h``` : help message and exit
- - ```--truth,-t``` : give truth level bit per input file
- - ```--nevents,-N``` : give max number of events per input file
- - ```--nparts,-n``` : give max number of leading particles per event with zero-padding
- - ```--output,-o``` : give name of output file
- - ```--dtype,-d``` : select the data representation: ```COMPACT```, ```PTEPM```, ```EP``` 
- - ```--gzip, -gz``` : compress h5 output 
- - ```--chunks,-k``` : give data chunk shape when saving to h5 file (may be necessary for very large event files)
+ - ```--help``` or ```-h``` : help message and exit
+ - ```--truth``` or ```-t``` : give truth level bit per input file
+ - ```--nevents``` or ```-N``` : give max number of events per input file
+ - ```--nparts``` or ```-n``` : give max number of leading particles per event with zero-padding
+ - ```--output``` or ```-o``` : give name of output file
+ - ```--dtype``` or ```-d``` : select the data representation: ```COMPACT```, ```PTEPM```, ```EP``` 
+ - ```--gzip``` or ``` -gz``` : compress h5 output 
+ - ```--chunks``` or ```-k``` : give data chunk shape when saving to h5 file (may be necessary for very large event files)
 
 # Example:
 
@@ -44,4 +44,4 @@ saves into a single file the following:
 
 where for each event we keep the leading 700 particles (ordered by pT) in the compact format *(pT, η, φ)*. The result is a numpy array with shape *(230, 2101)* stored into *combined_events.h5*.
 
-Dropping the arguments ```--truth```, ```--nevents```, and ```--nparts``` from above yields the following defualt settings: truth-level information is completely omitted, *all* events in each hepmc file are processed, and *all* particles in each event are stored with zero-padding (the padding legth is fixed by the event with the largest number of particles in the sample)
+Dropping the arguments ```--truth```, ```--nevents```, and ```--nparts``` from above yields the following defualt settings: truth-level information is completely omitted, *all* events in each hepmc file are processed, and *all* particles in each event are stored with zero-padding (the padding length is fixed by the event with the largest number of particles in the samples)
