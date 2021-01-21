@@ -14,52 +14,58 @@ __author__ ='Darius Faroughy <faroughy@physik.uzh.ch>'
 '''
 README:
 
-Extracts final state particles from hepmc2/hepmc3 files 
-and stores into compressed hdf5 file. The output data 
-has a similar format as the R&D Dataset from the 
-LHC Olympics 2020 Anomaly Detection Challenge. 
+hepmc_to_hdf5 extracts final state particles from HepMC2 collider event 
+records and saves them into a single hdf5 file in a compact format 
+similar to the R&D dataset of the LHC Olympics 2020 Anomaly Detection Challenge.
 
-Each event is described by a flattened array of hadron
-coordinates in three possible formats:  
+Each event is described by a flattened array of particle 'detector' coordinates
+ in three possible kinematical representations:
 
-  PTEP:  (pT, η, φ, pT, η, φ, ...) 
-  PTEPM: (pT, η, φ, M, pT, η, φ, M, ...) 
-  EP:    (E, px, py, pz, E, px, py, pz, ...)
- 
-Event arrays are zero padded to a fixed size M, set by the event
-in the sample with the largest number of particles. The truth label
-of each sample file can be appended at the end of each event array. 
-The complete dataset stored in the h5 output is a numpy array of 
-shape (Nevents, M) or (Nevents, M+1) if the truth label is included.
+COMPACT: (pT, η, φ, pT, η, φ, pT, η, φ,...)
 
-Basic information about the data (shape, number of signal and
-background events, dtype, etc) is stored as dataset attributes. 
+PTEPM: (pT, η, φ, M, pT, η, φ, M,pT, η, φ, M,...)
+
+EP: (E, px, py, pz, E, px, py, pz, E, px, py, pz,...)
+
+In each event array, particles are ordered by transverse momentum (for COMPACT and PTEPM)
+or energy (for EP), and are zero-padded to a constant size M. 
+The padding size M can be set by hand (by specyfing the number of 
+leading particles to be kept) or fixed by the event with the largest 
+number of particles in the sample. The truth label of each hepmc file
+can be appended at the end of each event array. The complete dataset
+is a numpy array of stacked events with shape (Nevents, M), or (Nevents, M+1)
+if truth labels are provided. Basic information about the data (shape, number of
+signal and background events, dtype, etc) are stored as dataset attributes.
 
 
-usage: hepmc_to_hdf5.py files [input_files ...] [-h] [--truth TRUTH [TRUTH ...]] [--output OUTPUT] [--dtype DTYPE] 
+usage: 
+
+hepmc_to_hdf5.py [-h] [--truth TRUTH [TRUTH ...]] [--nevents NEVENTS [NEVENTS ...]] [--nparts NPARTS] [--output OUTPUT] [--dtype DTYPE] [--gzip] [--chunks CHUNKS] files [files ...]
 
 optional arguments:
 
-  --help, -h,     show this help message and exit
-  --truth, -t,    optional list of truth labels for hepmc files
-  --nevents, -n,  number of event per file...
-  --output, -o,   name of output file
-  --dtype,  -d,   choose data type:  COMPACT (pT, η, φ, pT, η, φ, ...), 
-                                     PTEPM (pT, η, φ, M, pT, η, φ, M, ...)
-                                     EP (E, px, py, pz, E, px, py, pz, ...)
-  --compress, -c,  COMPRESS='gzip' for compressing h5
-  --chunks, -k,    chunk shape (N_chunk,M_chunk) for storing h5
+  -h, --help                                                  show this help message and exit
+  --truth TRUTH [TRUTH ...], -t TRUTH [TRUTH ...]             truth level bit for each hepmc file
+  --nevents NEVENTS [NEVENTS ...], -N NEVENTS [NEVENTS ...]   max event number for each hepmc file
+  --nparts NPARTS, -n NPARTS                                  store the n leading particles in each event with zero-padding
+  --output OUTPUT, -o OUTPUT                                  name of output file
+  --dtype DTYPE, -d DTYPE                                     choose data types: COMPACT (pT, η, φ, pT, η, φ, ...)
+                                                                                 PTEPM (pT, η, φ, M, pT, η, φ, M, ...)
+                                                                                 EP (E, px, py, pz, E, px, py, pz, ...)
+  --gzip, -gz                                                 compress h5 output
+  --chunks CHUNKS, -k CHUNKS                                  chunk shape when saving to h5 file
 
 '''          
 
 parser = argparse.ArgumentParser()
-p0=parser.add_argument('files', nargs='+', help='list hepmc files to be converted to h5...')
-p1=parser.add_argument('--truth','-t', nargs='+', type=int, default=-1, help='list of truth labels for hepmc files...')
-p2=parser.add_argument('--nevents', '-n', nargs='+', type=int, default=-1, help='number of event per file...')
-p3=parser.add_argument('--output', '-o', default='events.h5', help='name of output file...')
-p4=parser.add_argument('--dtype', '-d',default='PTEP', help='choose one of three data types: COMPACT (pT, η, φ, pT, η, φ, ...), PTEPM (pT, η, φ, M, pT, η, φ, M, ...), or EP (E, px, py, pz, E, px, py, pz, ...)')
-p5=parser.add_argument('--compress', '-c',default=None, help='compress h5')
-p6=parser.add_argument('--chunks', '-k',default=None, help='chunk shape for h5')
+p0=parser.add_argument('files', nargs='+', help='input hepmc files')
+p1=parser.add_argument('--truth', '-t', nargs='+', type=int, default=-1, help='truth level bit for each hepmc file')
+p2=parser.add_argument('--nevents', '-N', nargs='+', type=int, default=-1, help='max event number for each hepmc file')
+p3=parser.add_argument('--nparts', '-n', type=int, default=-1, help='store the n leading particles in each event with zero-padding')
+p4=parser.add_argument('--output', '-o', default='events.h5', help='name of output file')
+p5=parser.add_argument('--dtype', '-d', default='PTEP', help='choose data types: COMPACT (pT, η, φ, pT, η, φ, ...), PTEPM (pT, η, φ, M, pT, η, φ, M, ...), or EP (E, px, py, pz, E, px, py, pz, ...)')
+p6=parser.add_argument('--gzip', '-gz', action='store_true',default=False, help='compress h5 output')
+p7=parser.add_argument('--chunks', '-k', default=None, help='chunk shape when saving to h5 file')
 
 FLAGS=parser.parse_args()
 
@@ -69,135 +75,114 @@ if (FLAGS.nevents!=-1 and len(FLAGS.nevents)!=len(FLAGS.files)):
     raise argparse.ArgumentError(p2,'missing or too many event numbers provided!') 
 
 def hepmc_to_hdf5(FLAGS):
+    
+    t=timer()
     truth_labels=FLAGS.truth
     input_files=FLAGS.files
     output=FLAGS.output
     dtype=FLAGS.dtype
-    gzip=FLAGS.compress
+    gzip=FLAGS.gzip
     chunks=FLAGS.chunks
     nevents=FLAGS.nevents
-    t=timer()
+    nparts=FLAGS.nparts
     dim=0 
-    X=[] 
-    L=[]
+
+    events=[] 
+    labels=[]
+
     for i,file in enumerate(input_files):
         print('...processing {}'.format(file))
         line = HepMCReader(file)
+        Nev=0
         while True:
             evt = line.next()
             if not evt:
                 break 
-            final_states=[evt.particles[p][2:] for p in evt.particles if evt.particles[p][0]==1]
-            x=[]
-            for p in final_states:
-                mom=np.zeros(1, dtype=DTYPE_EP)
-                mom['px']=p[0]
-                mom['py']=p[1]
-                mom['pz']=p[2]
-                mom['E']=p[3]
-                if dtype=='EP':
-                    x+=list(mom[0])
-                elif dtype=='COMPACT': 
-                    x+=list(ep2ptepm(mom)[0])[:3]
-                elif dtype=='PTEPM': 
-                    x+=list(ep2ptepm(mom)[0])
-            X.append(x)
+            
+            final_states=[evt.particles[p][2:] for p in evt.particles if evt.particles[p][0]==1] # extracts only final state particles
+            
+            ep_list=[]
+            ptepm_list=[]
+            compact_list=[]
+
+            for p in final_states: # this is too slow.... need to optimize
+
+                kin_ep=np.zeros(1,dtype=DTYPE_EP)   # dtype=[('E', '<f8'), ('px', '<f8'), ('py', '<f8'), ('pz', '<f8')])
+                kin_ep['px']=p[0]
+                kin_ep['py']=p[1]
+                kin_ep['pz']=p[2]
+                kin_ep['E']=p[3]
+                kin_ptepm=ep2ptepm(kin_ep)          # dtype=[('pT', '<f8'), ('eta', '<f8'), ('phi', '<f8'), ('mass', '<f8')])
+                ep_list.append(list(kin_ep[0]))
+                ptepm_list.append(list(kin_ptepm[0]))
+                compact_list.append(list(kin_ptepm[0])[:3])
+
+            if dtype=='COMPACT':
+                ev=compact_list
+                len_dtype=3
+                del ptepm_list, ep_list
+
+            if dtype=='EP':
+                ev=ep_list
+                len_dtype=4
+                del compact_list, ptepm_list
+
+            if dtype=='PTEPM':
+                ev=ptepm_list
+                len_dtype=4
+                del compact_list, ep_list 
+
+            ev.sort(reverse=True)   # sorts particles by decreasing 'pT' for COMPACT/PTEPM, and by decreasing 'E' for EP
+            
+            if 0<nparts<len(ev):
+                ev=ev[:nparts]      # truncates event to keep the 'nparts' leading particles
+            if len(ev)>dim:
+                dim=len(ev) 
             if truth_labels!=-1:
-                L.append(truth_labels[i])                
-            if len(x)>dim:
-                dim=len(x)
-            if len(X)==nevents[i]:
-                break
+                labels.append(truth_labels[i]) 
+
+            events.append([item for sublist in ev for item in sublist])
+
+            if nevents!=-1:
+                Nev+=1
+                if Nev==nevents[i]:
+                    break
+
     print('...zero-padding data')
-    for i in range(0,100000,100):
-        if i<dim<=i+100:
-            dim=i+100
-            break
-    events=[]
-    for i,e in enumerate(X):
-        if len(L)==0:
-            particles=np.zeros(dim,dtype=np.float32)
+    events_0pad=[]
+    for i,e in enumerate(events):
+        if truth_labels==-1:
+            particles=np.zeros(dim*len_dtype,dtype=np.float32)
             particles[:len(e)]=e 
-            events.append(particles)
+            events_0pad.append(particles)
         else:
-            particles=np.zeros(dim+1,dtype=np.float32)
+            particles=np.zeros(dim*len_dtype+1,dtype=np.float32)
             particles[:len(e)]=e 
-            particles[-1]=L[i]
-            events.append(particles)   
-    shuffle(events)
-    data=np.stack(events)
+            particles[-1]=labels[i]
+            events_0pad.append(particles)  
+
+    shuffle(events_0pad)
+    data=np.stack(events_0pad)
+
     print('...extracted data shape : {}'.format(data.shape))
     print('...shuffling and saving events to {}'.format(output)) 
     with h5py.File(output,'w', libver='latest') as f:
         dset=f.create_dataset('data',data=data, chunks=chunks, compression=gzip)
         dset.attrs.create(name='shape',data=data.shape)
         dset.attrs.create(name='nevents',data=nevents)
-        dset.attrs.create(name='nsignal',data=int(np.sum(L)))
-        dset.attrs.create(name='nbackgr',data=int(len(L)-np.sum(L)))
+        dset.attrs.create(name='nparticles',data=nparts)
+        dset.attrs.create(name='nsignal',data=int(np.sum(labels)))
+        dset.attrs.create(name='nbackgr',data=int(len(labels)-np.sum(labels)))
         dset.attrs.create(name='dtype',data=dtype)
         dset.attrs.create(name='hepmc',data=input_files)
         dset.attrs.create(name='truth',data=truth_labels)
-    print('...hepmc to hdf5 extraction finished!')
+
+    print('...done!')
     print('...'+ elapsed_time(t))
+    return data
     
 ################################################          
 # from Python module pyhepmc 1.0.3 
-
-class Particle(object):
-    def __init__(self, pid=0, mom=[0,0,0,0], barcode=0, event=None):
-        self.evt = event
-        self.barcode = barcode
-        self.pid = pid
-        self.status = None
-        self.mom = list(mom)
-        self.nvtx_start = None
-        self.nvtx_end = None
-        self.mass = None
-    def vtx_start(self):
-        return self.evt.vertices.get(self.nvtx_start) if self.evt else None
-    def vtx_end(self):
-        return self.evt.vertices.get(self.nvtx_end) if self.evt else None
-    def parents(self):
-        return self.vtx_start().parents() if self.vtx_start() else None
-    def children(self):
-        return self.vtx_end().children() if self.vtx_end() else None
-    def __repr__(self):
-        return "P" + str(self.barcode)
-
-################################################          
-# from Python module pyhepmc 1.0.3
-
-class Vertex(object):
-    def __init__(self, pos=[0,0,0,0], barcode=0, event=None):
-        self.evt = event
-        self.pos = list(pos)
-        self.barcode = barcode
-    def parents(self):
-        return [p for p in self.evt.particles.values() if p.nvtx_end == self.barcode]
-    def children(self):
-        return [p for p in self.evt.particles.values() if p.nvtx_start == self.barcode]
-    def __repr__(self):
-        return "V" + str(self.barcode)
-
-################################################          
-# from Python module pyhepmc 1.0.3
-
-class Event(object):
-    def __init__(self):
-        self.num = None
-        self.weights = None
-        self.units = [None, None]
-        self.xsec = [None, None]
-        self.particles = {}
-        self.vertices = {}
-
-    def __repr__(self):
-        return "E%d. #p=%d #v=%d, xs=%1.2e+-%1.2e" % \
-               (self.num, len(self.particles), len(self.vertices),
-                self.xsec[0], self.xsec[1])
-
-################################################          
-# from Python module pyhepmc 1.0.3
 
 class HepMCReader(object):
     def __init__(self, filename):
@@ -264,6 +249,53 @@ class HepMCReader(object):
             self._read_next_line()
         return evt
 
+class Particle(object):
+    def __init__(self, pid=0, mom=[0,0,0,0], barcode=0, event=None):
+        self.evt = event
+        self.barcode = barcode
+        self.pid = pid
+        self.status = None
+        self.mom = list(mom)
+        self.nvtx_start = None
+        self.nvtx_end = None
+        self.mass = None
+    def vtx_start(self):
+        return self.evt.vertices.get(self.nvtx_start) if self.evt else None
+    def vtx_end(self):
+        return self.evt.vertices.get(self.nvtx_end) if self.evt else None
+    def parents(self):
+        return self.vtx_start().parents() if self.vtx_start() else None
+    def children(self):
+        return self.vtx_end().children() if self.vtx_end() else None
+    def __repr__(self):
+        return "P" + str(self.barcode)
+
+class Vertex(object):
+    def __init__(self, pos=[0,0,0,0], barcode=0, event=None):
+        self.evt = event
+        self.pos = list(pos)
+        self.barcode = barcode
+    def parents(self):
+        return [p for p in self.evt.particles.values() if p.nvtx_end == self.barcode]
+    def children(self):
+        return [p for p in self.evt.particles.values() if p.nvtx_start == self.barcode]
+    def __repr__(self):
+        return "V" + str(self.barcode)
+
+class Event(object):
+    def __init__(self):
+        self.num = None
+        self.weights = None
+        self.units = [None, None]
+        self.xsec = [None, None]
+        self.particles = {}
+        self.vertices = {}
+
+    def __repr__(self):
+        return "E%d. #p=%d #v=%d, xs=%1.2e+-%1.2e" % \
+               (self.num, len(self.particles), len(self.vertices),
+                self.xsec[0], self.xsec[1])
+
 ################################################          
 
 def ep2ptepm(rec):  #Convert (E, px, py, pz) into (pT, eta, phi, mass)
@@ -302,6 +334,4 @@ def elapsed_time(t0):
 ################################################          
       
 # run:
-
 hepmc_to_hdf5(FLAGS)
-
