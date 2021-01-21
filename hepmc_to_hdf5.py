@@ -6,8 +6,11 @@ import sys
 import pandas as pd
 import argparse
 from random import shuffle
-from timeit import default_timer as timer
-          
+from timeit import default_timer as timer      
+
+__version__='1.0.0'
+__author__ ='Darius Faroughy <faroughy@physik.uzh.ch>'
+
 '''
 README:
 
@@ -37,35 +40,33 @@ usage: hepmc_to_hdf5.py files [input_files ...] [-h] [--truth TRUTH [TRUTH ...]]
 
 optional arguments:
 
-  -h, --help                                        show this help message and exit
-  --truth TRUTH [TRUTH ...], -t TRUTH [TRUTH ...]   optional list of truth labels for hepmc files
-  --output OUTPUT, -o OUTPUT                        name of output file
-  --dtype DTYPE, -d DTYPE                           choose data type: COMPACT (pT, η, φ, pT, η, φ, ...), 
-                                                                      PTEPM (pT, η, φ, M, pT, η, φ, M, ...)
-                                                                      EP (E, px, py, pz, E, px, py, pz, ...)
-  --compress COMPRESS, -c COMPRESS                  COMPRESS='gzip' for compressing h5
-  --chunks CHUNKS, -ch CHUNKS                       chunk shape (N_chunk,M_chunk) for storing h5
-
-
-partially based on `hepmcio` Python module pyhepmc 1.0.3
+  --help, -h,     show this help message and exit
+  --truth, -t,    optional list of truth labels for hepmc files
+  --nevents, -n,  number of event per file...
+  --output, -o,   name of output file
+  --dtype,  -d,   choose data type:  COMPACT (pT, η, φ, pT, η, φ, ...), 
+                                     PTEPM (pT, η, φ, M, pT, η, φ, M, ...)
+                                     EP (E, px, py, pz, E, px, py, pz, ...)
+  --compress, -c,  COMPRESS='gzip' for compressing h5
+  --chunks, -k,    chunk shape (N_chunk,M_chunk) for storing h5
 
 '''          
 
-__version__='1.0.0'
-__author__ ='Darius Faroughy <faroughy@physik.uzh.ch>'
-
 parser = argparse.ArgumentParser()
+p0=parser.add_argument('files', nargs='+', help='list hepmc files to be converted to h5...')
 p1=parser.add_argument('--truth','-t', nargs='+', type=int, default=-1, help='list of truth labels for hepmc files...')
-p2=parser.add_argument('files', nargs='+', help='list hepmc files to be converted to h5...')
+p2=parser.add_argument('--nevents', '-n', nargs='+', type=int, default=-1, help='number of event per file...')
 p3=parser.add_argument('--output', '-o', default='events.h5', help='name of output file...')
 p4=parser.add_argument('--dtype', '-d',default='PTEP', help='choose one of three data types: COMPACT (pT, η, φ, pT, η, φ, ...), PTEPM (pT, η, φ, M, pT, η, φ, M, ...), or EP (E, px, py, pz, E, px, py, pz, ...)')
 p5=parser.add_argument('--compress', '-c',default=None, help='compress h5')
-p6=parser.add_argument('--chunks', '-ch',default=None, help='chunk shape for h5')
+p6=parser.add_argument('--chunks', '-k',default=None, help='chunk shape for h5')
 
 FLAGS=parser.parse_args()
 
 if (FLAGS.truth!=-1 and len(FLAGS.truth)!=len(FLAGS.files)):
     raise argparse.ArgumentError(p1,'missing or too many truth labels provided!') 
+if (FLAGS.nevents!=-1 and len(FLAGS.nevents)!=len(FLAGS.files)):
+    raise argparse.ArgumentError(p2,'missing or too many event numbers provided!') 
 
 def hepmc_to_hdf5(FLAGS):
     truth_labels=FLAGS.truth
@@ -74,6 +75,7 @@ def hepmc_to_hdf5(FLAGS):
     dtype=FLAGS.dtype
     gzip=FLAGS.compress
     chunks=FLAGS.chunks
+    nevents=FLAGS.nevents
     t=timer()
     dim=0 
     X=[] 
@@ -104,6 +106,8 @@ def hepmc_to_hdf5(FLAGS):
                 L.append(truth_labels[i])                
             if len(x)>dim:
                 dim=len(x)
+            if len(X)==nevents[i]:
+                break
     print('...zero-padding data')
     for i in range(0,100000,100):
         if i<dim<=i+100:
@@ -127,6 +131,7 @@ def hepmc_to_hdf5(FLAGS):
     with h5py.File(output,'w', libver='latest') as f:
         dset=f.create_dataset('data',data=data, chunks=chunks, compression=gzip)
         dset.attrs.create(name='shape',data=data.shape)
+        dset.attrs.create(name='nevents',data=nevents)
         dset.attrs.create(name='nsignal',data=int(np.sum(L)))
         dset.attrs.create(name='nbackgr',data=int(len(L)-np.sum(L)))
         dset.attrs.create(name='dtype',data=dtype)
@@ -136,6 +141,7 @@ def hepmc_to_hdf5(FLAGS):
     print('...'+ elapsed_time(t))
     
 ################################################          
+# from Python module pyhepmc 1.0.3 
 
 class Particle(object):
     def __init__(self, pid=0, mom=[0,0,0,0], barcode=0, event=None):
@@ -159,6 +165,7 @@ class Particle(object):
         return "P" + str(self.barcode)
 
 ################################################          
+# from Python module pyhepmc 1.0.3
 
 class Vertex(object):
     def __init__(self, pos=[0,0,0,0], barcode=0, event=None):
@@ -173,6 +180,7 @@ class Vertex(object):
         return "V" + str(self.barcode)
 
 ################################################          
+# from Python module pyhepmc 1.0.3
 
 class Event(object):
     def __init__(self):
@@ -189,6 +197,7 @@ class Event(object):
                 self.xsec[0], self.xsec[1])
 
 ################################################          
+# from Python module pyhepmc 1.0.3
 
 class HepMCReader(object):
     def __init__(self, filename):
