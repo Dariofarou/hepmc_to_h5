@@ -19,7 +19,7 @@ In each event array, particles are ordered by transverse momentum (for```COMPACT
 
 # Usage:
 ```bash
-hepmc_to_hdf5.py files [files ...] [-h] [--truth TRUTH ...] [--nevents NEVENTS ...] [--nparts NPARTS] [--output OUTPUT] [--dtype DTYPE] [--gzip] [--chunks CHUNKS]       
+hepmc_to_hdf5.py files [files ...] [-h] [--truth TRUTH ...] [--nevents NEVENTS ...] [--nparts NPARTS] [--pandas] [--output OUTPUT] [--dtype DTYPE] [--gzip] [--chunks CHUNKS]       
 ```
 
 Optional arguments:
