@@ -9,7 +9,7 @@ Each event is described by a flattened array of particle 'detector' coordinates 
   
  - ```EP```:    (E, px, py, pz, E, px, py, pz, E, px, py, pz,...)
  
-Event arrays are zero padded to a fixed size *M*, set by the event in the sample with the largest number of particles. The truth label of each sample file can be appended at the end of each event array. The complete dataset is a stack of event arrays with shape *(Nevents, M)*, or *(Nevents, M+1)* if truth labels are  provided. Basic information about the data (shape, number of signal and background events, dtype, etc) are stored as dataset attributes. 
+The event arrays are zero padded to a fixed size *M*, set by the event with the largest number of particles in the sample. The truth label of each hepmc file can be appended at the end of each event array. The complete dataset is a numpy array of stacked events with shape *(Nevents, M)*, or *(Nevents, M+1)* if truth labels are  provided. Basic information about the data (shape, number of signal and background events, dtype, etc) are stored as dataset attributes. 
 
 ***TODO: include vertex information (x,y,z,ct) and particle ID.*** 
 
