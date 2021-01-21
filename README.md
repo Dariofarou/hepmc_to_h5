@@ -21,6 +21,10 @@ Event arrays are zero padded to a fixed size *M*, set by the event in the sample
 ```bash
 hepmc_to_hdf5.py files [files ...] [-h] [--truth TRUTH ...] [--output OUTPUT] [--dtype DTYPE]
 ```
+For more information: 
+```bash
+hepmc_to_hdf5.py --help
+```
 # Example:
 To extract particles with *(pT, η, φ, M)* coordinates from three hepmc files
 - *events_1.hepmc* (signal process)
@@ -32,7 +36,3 @@ and store them into *events.h5* including truth level information, just run:
 python hepmc_to_hdf5.py events_1.hepmc events_2.hepmc events_3.hepmc --truth 1 0 0 --output events.h5 --dtype PTEPM
 ```
 To completely remove truth labels from the output simply remove the ```--truth``` arguments above. 
-For more information: 
-```bash
-hepmc_to_hdf5.py --help
-```
