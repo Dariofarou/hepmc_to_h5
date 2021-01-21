@@ -44,4 +44,4 @@ saves into a single the following:
 
 where for each event we keep the leading 700 particles (ordered by pT) in the compact format *(pT, η, φ)*. The result is a numpy array with shape *(230, 2101)* stored into *combined_events.h5*.
 
-To omit truth level information from the output, simply drop the ```--truth``` argument from above. If the argument ```--nevents``` is not called, then *all* events from each hepmc file are saved. If ```--nparts``` is not called then *all* particles in each event are stored with zero-padding. 
+To omit truth level information from the output, simply drop the ```--truth``` argument from above (yields a numpy array with shape *(700,2100)*). If the argument ```--nevents``` is not called, then *all* events in each hepmc file are processed. If ```--nparts``` is not called then *all* particles in each event are stored with zero-padding, with padding legth fixed by the event with the largest number of particles in the sample. 
