@@ -19,20 +19,23 @@ The event arrays are zero padded to a fixed size *M*, set by the event with the 
 
 # Usage:
 ```bash
-hepmc_to_hdf5.py files [files ...] [-h] [--truth TRUTH ...] [--output OUTPUT] [--dtype DTYPE]
+hepmc_to_hdf5.py files [files ...] [-h] [--truth TRUTH ...] [--nevents NEVENTS ...] [--output OUTPUT] [--dtype DTYPE] [--compress COMPRESS] [--chunks CHUNKS]
+                      
 ```
 For more information: 
 ```bash
 hepmc_to_hdf5.py --help
 ```
 # Example:
-To extract particles with *(pT, η, φ, M)* coordinates from three hepmc files
-- *events_1.hepmc* (signal process)
-- *events_2.hepmc* (background process)
-- *events_3.hepmc* (another background process) 
 
-and store them into *events.h5* including truth level information, just run:
+Running,
 ```bash
-python hepmc_to_hdf5.py events_1.hepmc events_2.hepmc events_3.hepmc --truth 1 0 0 --output events.h5 --dtype PTEPM
+python hepmc_to_hdf5.py events_1.hepmc events_2.hepmc events_3.hepmc --truth 1 0 0 --nevents 10 100 120 --output events.h5 --dtype PTEPM
 ```
-To completely remove truth labels from the output simply remove the ```--truth``` arguments above. 
+saves into *events.h5* 
+-  10 events from *events_1.hepmc* (signal process)
+- 100 events from *events_2.hepmc* (background process)
+- 120 events from *events_3.hepmc* (another background process) 
+
+with truth level information and particle coordinates *(pT, η, φ, M)*. save
+To completely omit truth labels in the output simply remove the ```--truth``` arguments above. Not calling ```-nevents``` extracts all events from each file.  
