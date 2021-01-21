@@ -19,22 +19,29 @@ The event arrays are zero padded to a constant size *M*. The padding size *M* is
 
 # Usage:
 ```bash
-hepmc_to_hdf5.py files [files ...] [-h] [--truth TRUTH ...] [--nevents NEVENTS ...] [--output OUTPUT] [--dtype DTYPE] [--compress COMPRESS] [--chunks CHUNKS]
-                      
+hepmc_to_hdf5.py files [files ...] [-h] [--truth TRUTH ...] [--nevents NEVENTS ...] [--nparts NPARTS] [--output OUTPUT] [--dtype DTYPE] [--gzip] [--chunks CHUNKS]       
 ```
-For more information: 
-```bash
-hepmc_to_hdf5.py --help
-```
+
+optional arguments:
+
+ - ```--help,-h```: help message and exit
+ - ```--truth,-t TRUTH [TRUTH...]```: truth level bit for each hepmc file
+ - ```--nevents,-N NEVENTS [NEVENTS...]```: max event number for each hepmc file
+ - ```--nparts,-n NPARTS```: keeps the NPARTS leading particles in each event with zero-padding
+ - ```--output,-o OUTPUT```: name of output file
+ - ```--dtype,-d, DTYPE```: choose data types: COMPACT, PTEPM, EP 
+ - ```--gzip, -gz```: compress h5 output
+ - ```--chunks,-k CHUNKS```: data chunk shape when saving to h5 file
+
 # Example:
 
 Running
 ```bash
-python hepmc_to_hdf5.py events_1.hepmc events_2.hepmc events_3.hepmc --truth 1 0 0 --nevents 10 100 120 --output events.h5 --dtype PTEPM
+python hepmc_to_hdf5.py events_1.hepmc events_2.hepmc events_3.hepmc --truth 1 0 0 --nevents 10 100 120 --nparts 700 --output events.h5 --dtype PTEPM
 ```
 saves into a single file *events.h5*: 
 -  10 *signal* events from *events_1.hepmc*
 - 100 *background* events from *events_2.hepmc*
 - 120 *background* events from *events_3.hepmc*
 
-in the format *(pT, η, φ, M)*. To omit truth level information from the output, simply drop the ```--truth``` argument from above. If the argument ```--nevents``` is not called, then *all* events from each hepmc file are saved.  
+where each event consists of the leading 700 particles, ordered by pT, in the format *(pT, η, φ, M)*. To omit truth level information from the output, simply drop the ```--truth``` argument from above. If the argument ```--nevents``` is not called, then *all* events from each hepmc file are saved.  
