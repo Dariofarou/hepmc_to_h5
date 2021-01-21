@@ -9,7 +9,7 @@ Each event is described by a flattened array of particle 'detector' coordinates 
   
  - ```EP```:    (E, px, py, pz, E, px, py, pz, E, px, py, pz,...)
  
-In each event array, particles are ordered by transverse momentum (for```COMPACT,PTEPM```) or energy (dor ```EP```), and are zero-padded to a constant size *M*. The padding size *M* can be set by hand (by specyfing the number of leading particles to be kept) or fixed by the event with the largest number of particles in the sample. The truth label of each hepmc file can be appended at the end of each event array. The complete dataset is a numpy array of stacked events with shape *(Nevents, M)*, or *(Nevents, M+1)* if truth labels are  provided. Basic information about the data (shape, number of signal and background events, dtype, etc) are stored as dataset attributes. 
+In each event array, particles are ordered by transverse momentum (for```COMPACT``` and ```PTEPM```) or energy (for ```EP```), and are zero-padded to a constant size *M*. The padding size *M* can be set by hand (by specyfing the number of leading particles to be kept) or fixed by the event with the largest number of particles in the sample. The truth label of each hepmc file can be appended at the end of each event array. The complete dataset is a numpy array of stacked events with shape *(Nevents, M)*, or *(Nevents, M+1)* if truth labels are  provided. Basic information about the data (shape, number of signal and background events, dtype, etc) are stored as dataset attributes. 
 
 # Requirements: 
 - h5py
@@ -27,7 +27,7 @@ Optional arguments:
  - ```--nevents,-N``` : give max number of events for each hepmc file
  - ```--nparts,-n``` : give max number of leading particles per event to be stored with zero-padding
  - ```--output,-o``` : give name of output file
- - ```--dtype,-d``` : select data types: COMPACT, PTEPM, EP 
+ - ```--dtype,-d``` : select the data representation: ```COMPACT```, ```PTEPM```, ```EP``` 
  - ```--gzip, -gz``` : compress h5 output
  - ```--chunks,-k``` : give data chunk shape when saving to h5 file
 
@@ -35,13 +35,13 @@ Optional arguments:
 
 Running
 ```bash
-python hepmc_to_hdf5.py events_1.hepmc events_2.hepmc events_3.hepmc --truth 1 0 0 --nevents 10 100 120 --nparts 700 --output combined_events.h5 --dtype PTEPM
+python hepmc_to_hdf5.py events_1.hepmc events_2.hepmc events_3.hepmc --truth 1 0 0 --nevents 10 100 120 --nparts 700 --output combined_events.h5 --dtype COMPACT
 ```
 saves into a single the following: 
 -  10 *signal* events from *events_1.hepmc*
 - 100 *background* events from *events_2.hepmc*
 - 120 *background* events from *events_3.hepmc*
 
-where for each event we keep the leading 700 particles (ordered by pT) in the format *(pT, η, φ, M)*. The result is a numpy array with shape *(230, 2101)* stored into *combined_events.h5*.
+where for each event we keep the leading 700 particles (ordered by pT) in the compact format *(pT, η, φ)*. The result is a numpy array with shape *(230, 2101)* stored into *combined_events.h5*.
 
 To omit truth level information from the output, simply drop the ```--truth``` argument from above. If the argument ```--nevents``` is not called, then *all* events from each hepmc file are saved. If ```--nparts``` is not called then *all* particles in each event are stored with zero-padding. 
