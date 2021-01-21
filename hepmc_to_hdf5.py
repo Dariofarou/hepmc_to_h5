@@ -8,7 +8,6 @@ import argparse
 from random import shuffle
 from timeit import default_timer as timer
           
-
 '''
 README:
 
@@ -44,13 +43,98 @@ optional arguments:
   --dtype DTYPE, -d DTYPE                           choose data type: COMPACT (pT, η, φ, pT, η, φ, ...), 
                                                                       PTEPM (pT, η, φ, M, pT, η, φ, M, ...)
                                                                       EP (E, px, py, pz, E, px, py, pz, ...)
+  --compress COMPRESS, -c COMPRESS                  COMPRESS='gzip' for compressing h5
+  --chunks CHUNKS, -ch CHUNKS                       chunk shape (N_chunk,M_chunk) for storing h5
 
-Dependencies: h5py, pyjet
 
-TODO: formats thast include vertex information (x,y,z,ct) and pID. 
+partially based on `hepmcio` Python module pyhepmc 1.0.3
 
-'''
+'''          
 
+__version__='1.0.0'
+__author__ ='Darius Faroughy <faroughy@physik.uzh.ch>'
+
+parser = argparse.ArgumentParser()
+p1=parser.add_argument('--truth','-t', nargs='+', type=int, default=-1, help='list of truth labels for hepmc files...')
+p2=parser.add_argument('files', nargs='+', help='list hepmc files to be converted to h5...')
+p3=parser.add_argument('--output', '-o', default='events.h5', help='name of output file...')
+p4=parser.add_argument('--dtype', '-d',default='PTEP', help='choose one of three data types: COMPACT (pT, η, φ, pT, η, φ, ...), PTEPM (pT, η, φ, M, pT, η, φ, M, ...), or EP (E, px, py, pz, E, px, py, pz, ...)')
+p5=parser.add_argument('--compress', '-c',default=None, help='compress h5')
+p6=parser.add_argument('--chunks', '-ch',default=None, help='chunk shape for h5')
+
+FLAGS=parser.parse_args()
+
+if (FLAGS.truth!=-1 and len(FLAGS.truth)!=len(FLAGS.files)):
+    raise argparse.ArgumentError(p1,'missing or too many truth labels provided!') 
+
+def hepmc_to_hdf5(FLAGS):
+    truth_labels=FLAGS.truth
+    input_files=FLAGS.files
+    output=FLAGS.output
+    dtype=FLAGS.dtype
+    gzip=FLAGS.compress
+    chunks=FLAGS.chunks
+    t=timer()
+    dim=0 
+    X=[] 
+    L=[]
+    for i,file in enumerate(input_files):
+        print('...processing {}'.format(file))
+        line = HepMCReader(file)
+        while True:
+            evt = line.next()
+            if not evt:
+                break 
+            final_states=[evt.particles[p][2:] for p in evt.particles if evt.particles[p][0]==1]
+            x=[]
+            for p in final_states:
+                mom=np.zeros(1, dtype=DTYPE_EP)
+                mom['px']=p[0]
+                mom['py']=p[1]
+                mom['pz']=p[2]
+                mom['E']=p[3]
+                if dtype=='EP':
+                    x+=list(mom[0])
+                elif dtype=='COMPACT': 
+                    x+=list(ep2ptepm(mom)[0])[:3]
+                elif dtype=='PTEPM': 
+                    x+=list(ep2ptepm(mom)[0])
+            X.append(x)
+            if truth_labels!=-1:
+                L.append(truth_labels[i])                
+            if len(x)>dim:
+                dim=len(x)
+    print('...zero-padding data')
+    for i in range(0,100000,100):
+        if i<dim<=i+100:
+            dim=i+100
+            break
+    events=[]
+    for i,e in enumerate(X):
+        if len(L)==0:
+            particles=np.zeros(dim,dtype=np.float32)
+            particles[:len(e)]=e 
+            events.append(particles)
+        else:
+            particles=np.zeros(dim+1,dtype=np.float32)
+            particles[:len(e)]=e 
+            particles[-1]=L[i]
+            events.append(particles)   
+    shuffle(events)
+    data=np.stack(events)
+    print('...extracted data shape : {}'.format(data.shape))
+    print('...shuffling and saving events to {}'.format(output)) 
+    with h5py.File(output,'w', libver='latest') as f:
+        dset=f.create_dataset('data',data=data, chunks=chunks, compression=gzip)
+        dset.attrs.create(name='shape',data=data.shape)
+        dset.attrs.create(name='nsignal',data=int(np.sum(L)))
+        dset.attrs.create(name='nbackgr',data=int(len(L)-np.sum(L)))
+        dset.attrs.create(name='dtype',data=dtype)
+        dset.attrs.create(name='hepmc',data=input_files)
+        dset.attrs.create(name='truth',data=truth_labels)
+    print('...hepmc to hdf5 extraction finished!')
+    print('...'+ elapsed_time(t))
+    
 ################################################          
 
 class Particle(object):
@@ -143,8 +227,7 @@ class HepMCReader(object):
         assert self._currentline.startswith("E ")
         vals = self._currentline.split()
         evt.num = int(vals[1])
-        evt.weights = [float(vals[-1])] # TODO: do this right, and handle weight maps
-        ## Read the other event header lines until a Vertex line is encountered
+        evt.weights = [float(vals[-1])] 
         while not self._currentline.startswith("V "):
             self._read_next_line()
             vals = self._currentline.split()
@@ -164,7 +247,7 @@ class HepMCReader(object):
                     print(vals)
             elif vals[0] == "V":
                 bc = int(vals[1])
-                self._currentvtx = bc # current vtx barcode for following Particles
+                self._currentvtx = bc 
                 v = Vertex(barcode=bc, pos=[float(x) for x in vals[3:7]], event=evt)
                 evt.vertices[bc] = v
             elif not self._currentline or self._currentline == "HepMC::IO_GenEvent-END_EVENT_LISTING":
@@ -208,91 +291,8 @@ def elapsed_time(t0):
     return res
 
 ################################################          
+      
+# run:
 
-def hepmc_to_hdf5(input_files,output='events.h5',dtype='COMPACT',truth_labels=-1):
-    t=timer()
-    dim=0; X=[]; L=[]
-    for i,file in enumerate(input_files):
-        print('...processing {}'.format(file))
-        line = HepMCReader(file)
-        while True:
-            evt = line.next()
-            if not evt:
-                break 
-            final_states=[evt.particles[p][2:] for p in evt.particles if evt.particles[p][0]==1]
-            x=[]
-            for p in final_states:
-                mom=np.zeros(1, dtype=DTYPE_EP)
-                mom['px']=p[0]; mom['py']=p[1]; mom['pz']=p[2]; mom['E']=p[3]
-                if dtype=='EP':
-                    x+=list(mom[0])
-                elif dtype=='COMPACT': 
-                    x+=list(ep2ptepm(mom)[0])[:3]
-                elif dtype=='PTEPM': 
-                    x+=list(ep2ptepm(mom)[0])
-            X.append(x)
-            if truth_labels!=-1:
-                L.append(truth_labels[i])                
-            if len(x)>dim:
-                dim=len(x)
-    for i in range(0,100000,100):
-        if i<dim<=i+100:
-            dim=i+100
-            break
-    events=[]
-    for i,e in enumerate(X):
-        if len(L)==0:
-            particles=np.zeros(dim)
-            particles[:len(e)]=e 
-            events.append(particles)
-        else:
-            particles=np.zeros(dim+1)
-            particles[:len(e)]=e 
-            particles[-1]=L[i]
-            events.append(particles)   
-    shuffle(events)
-    data=np.stack(events)
-    print('...extracted data shape : {}'.format(data.shape))
-    print('...shuffling and saving events to {}'.format(output)) 
-    # if data.shape[0]>1000:
-    #     nchunk=1000
-    # else:
-    #     nchunk=data.shape[0]
-    # chunks=(nchunk,data.shape[1])
-    # chunks=None
-    with h5py.File(output,'w', libver='latest') as f:
-        dset=f.create_dataset('data',data=data, compression='gzip', compression_opts=9)
-        dset.attrs.create(name='shape',data=data.shape)
-        dset.attrs.create(name='nsignal',data=int(np.sum(L)))
-        dset.attrs.create(name='nbackgr',data=int(len(L)-np.sum(L)))
-        dset.attrs.create(name='dtype',data=dtype)
-        dset.attrs.create(name='hepmc',data=input_files)
-        dset.attrs.create(name='truth',data=truth_labels)
-   
-    print('...hepmc to hdf5 extraction finished!')
-    print('...'+ elapsed_time(t))
-    
-################################################          
+hepmc_to_hdf5(FLAGS)
 
-parser = argparse.ArgumentParser()
-p1=parser.add_argument('--truth','-t', nargs='+', type=int, default=-1, help='optional list of truth labels for hepmc files...')
-p2=parser.add_argument('files', nargs='+', help='list hepmc files to be converted to h5...')
-p3=parser.add_argument('--output', '-o', default='events.h5', help='name of output file...')
-p4=parser.add_argument('--dtype', '-d',default='PTEP', help='choose one of three data types: COMPACT (pT, η, φ, pT, η, φ, ...), PTEPM (pT, η, φ, M, pT, η, φ, M, ...), or EP (E, px, py, pz, E, px, py, pz, ...)')
-
-FLAGS=parser.parse_args()
-truths=FLAGS.truth
-files=FLAGS.files
-output=FLAGS.output
-dtype=FLAGS.dtype
-
-if (truths!=-1 and len(truths)!=len(files)):
-    raise argparse.ArgumentError(p1,'missing or too many truth labels provided!') 
-
-################################################   
-
-hepmc_to_hdf5(input_files=files,output=output,truth_labels=truths,dtype=dtype)
-
-
-
-    
