@@ -28,13 +28,13 @@ hepmc_to_hdf5.py --help
 ```
 # Example:
 
-Running,
+Running
 ```bash
 python hepmc_to_hdf5.py events_1.hepmc events_2.hepmc events_3.hepmc --truth 1 0 0 --nevents 10 100 120 --output events.h5 --dtype PTEPM
 ```
-saves into a single file *events.h5* 
--  10 *signal* events from *events_1.hepmc*,
-- 100 *background* events from *events_2.hepmc*,
-- 120 *background* events from *events_3.hepmc*,
+saves into a single file *events.h5*: 
+-  10 *signal* events from *events_1.hepmc*
+- 100 *background* events from *events_2.hepmc*
+- 120 *background* events from *events_3.hepmc*
 
-in format *(pT, η, φ, M)*. Not calling ```--truth``` above will remove any truth level information from the output, and not calling ```--nevents``` saves all events from each hepmc file.  
+in the format *(pT, η, φ, M)*. In order to omit any truth level information from the output drop the argument ```--truth``` above. In order to save *all* events from each hepmc file drop the argument ```--nevents```.  
