@@ -1,5 +1,5 @@
 # README
-```hepmc_to_hdf5``` extracts final state particles from *HepMC2*  collider event record files and saves them into a single *hdf5* file in a compact format similar to the R&D dataset of the [LHC Olympics 2020 Anomaly Detection Challenge](https://lhco2020.github.io/homepage/). 
+```hepmc_to_hdf5``` extracts final state particles from *HepMC2* collider event records and saves them into a single *hdf5* file in a compact format similar to the R&D dataset of the [LHC Olympics 2020 Anomaly Detection Challenge](https://lhco2020.github.io/homepage/). 
 
 Each event is described by a flattened array of particle 'detector' coordinates in three possible kinematical representations:  
 
@@ -37,11 +37,11 @@ Running
 ```bash
 python hepmc_to_hdf5.py events_1.hepmc events_2.hepmc events_3.hepmc --truth 1 0 0 --nevents 10 100 120 --nparts 700 --output combined_events.h5 --dtype COMPACT
 ```
-saves into a single the following: 
+saves into a single file the following: 
 -  10 *signal* events from *events_1.hepmc*
 - 100 *background* events from *events_2.hepmc*
 - 120 *background* events from *events_3.hepmc*
 
 where for each event we keep the leading 700 particles (ordered by pT) in the compact format *(pT, η, φ)*. The result is a numpy array with shape *(230, 2101)* stored into *combined_events.h5*.
 
-To omit truth level information from the output, simply drop the ```--truth``` argument from above (yields a numpy array with shape *(700,2100)*). If the argument ```--nevents``` is not called, then *all* events in each hepmc file are processed. If ```--nparts``` is not called then *all* particles in each event are stored with zero-padding, with padding legth fixed by the event with the largest number of particles in the sample. 
+Dropping the ```--truth```,```--nevents```,```--nparts``` above, yields the following defualt settings: truth-level information is completely omitted, *all* events in each hepmc file are processed, and *all* particles in each event are stored with zero-padding (the padding legth is fixed by the event with the largest number of particles in the sample)
