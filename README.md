@@ -32,9 +32,9 @@ Running,
 ```bash
 python hepmc_to_hdf5.py events_1.hepmc events_2.hepmc events_3.hepmc --truth 1 0 0 --nevents 10 100 120 --output events.h5 --dtype PTEPM
 ```
-saves into *events.h5* the following:
--  10 *signal* events from *events_1.hepmc* (signal process)
-- 100 *background* events from *events_2.hepmc* (background process)
-- 120 *background* events from *events_3.hepmc* (another background process) 
+saves into a single file *events.h5* 
+-  10 *signal* events from *events_1.hepmc*,
+- 100 *background* events from *events_2.hepmc*,
+- 120 *background* events from *events_3.hepmc*,
 
-with particle coordinates *(pT, η, φ, M)*. Not calling ```--truth``` above will remove any truth level information from the output, and not calling ```--nevents``` extracts all events from each file.  
+in format *(pT, η, φ, M)*. Not calling ```--truth``` above will remove any truth level information from the output, and not calling ```--nevents``` saves all events from each hepmc file.  
