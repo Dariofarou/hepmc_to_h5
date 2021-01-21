@@ -12,9 +12,10 @@ Each event is described by a flattened array of particle 'detector' coordinates 
 In each event array, particles are ordered by transverse momentum (for```COMPACT``` and ```PTEPM```) or energy (for ```EP```), and are zero-padded to a constant size *M*. The padding size *M* can be set by hand (by specyfing the number of leading particles to be kept) or fixed by the event with the largest number of particles in the sample. The truth label of each hepmc file can be appended at the end of each event array. The complete dataset is a numpy array (or a pandas ```DataFrame```) of stacked events with shape *(Nevents, M)*, or *(Nevents, M+1)* if truth labels are  provided. Basic information about the data (shape, number of signal and background events, dtype, etc) are stored as dataset attributes. 
 
 # Requirements: 
+- numpy
+- pandas
 - h5py
 - pyjet
-- pandas
 
 # Usage:
 ```bash
@@ -27,11 +28,11 @@ Optional arguments:
  - ```--truth``` or ```-t``` : truth level bit per input file
  - ```--nevents``` or ```-N``` : max number of events per input file
  - ```--nparts``` or ```-n``` : max number of leading particles per event with zero-padding
+ - ```--pandas``` or ```-pd``` : saves as a pandas ```DataFrame``` (recommenced)
  - ```--output``` or ```-o``` : name of output file
  - ```--dtype``` or ```-d``` : select the data representation: ```COMPACT```, ```PTEPM```, ```EP``` 
  - ```--gzip``` or ``` -gz``` : compress h5 output 
  - ```--chunks``` or ```-k``` : chunk shape when saving to h5 file (may be necessary for very large event files)
- - ```--pandas``` or ```-pd``` : saves as a pandas ```DataFrame``` (recommenced)
 
 # Example:
 
