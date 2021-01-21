@@ -48,6 +48,7 @@ optional arguments:
   --truth TRUTH [TRUTH ...], -t TRUTH [TRUTH ...]             truth level bit for each hepmc file
   --nevents NEVENTS [NEVENTS ...], -N NEVENTS [NEVENTS ...]   max event number for each hepmc file
   --nparts NPARTS, -n NPARTS                                  store the n leading particles in each event with zero-padding
+  --pandas, -pd                                               save as padas DataFrame (recommended)
   --output OUTPUT, -o OUTPUT                                  name of output file
   --dtype DTYPE, -d DTYPE                                     choose data types: COMPACT (pT, η, φ, pT, η, φ, ...)
                                                                                  PTEPM (pT, η, φ, M, pT, η, φ, M, ...)
@@ -62,10 +63,11 @@ p0=parser.add_argument('files', nargs='+', help='input hepmc files')
 p1=parser.add_argument('--truth', '-t', nargs='+', type=int, default=-1, help='truth level bit for each hepmc file')
 p2=parser.add_argument('--nevents', '-N', nargs='+', type=int, default=-1, help='max event number for each hepmc file')
 p3=parser.add_argument('--nparts', '-n', type=int, default=-1, help='store the n leading particles in each event with zero-padding')
-p4=parser.add_argument('--output', '-o', default='events.h5', help='name of output file')
-p5=parser.add_argument('--dtype', '-d', default='PTEP', help='choose data types: COMPACT (pT, η, φ, pT, η, φ, ...), PTEPM (pT, η, φ, M, pT, η, φ, M, ...), or EP (E, px, py, pz, E, px, py, pz, ...)')
-p6=parser.add_argument('--gzip', '-gz', action='store_true',default=False, help='compress h5 output')
-p7=parser.add_argument('--chunks', '-k', default=None, help='chunk shape when saving to h5 file')
+p4=parser.add_argument('--pandas', '-pd', action='store_true',default=False, help='save as pandas DataFrame')
+p5=parser.add_argument('--output', '-o', default='events.h5', help='name of output file')
+p6=parser.add_argument('--dtype', '-d', default='COMPACT', help='choose data types: COMPACT (pT, η, φ, pT, η, φ, ...), PTEPM (pT, η, φ, M, pT, η, φ, M, ...), or EP (E, px, py, pz, E, px, py, pz, ...)')
+p7=parser.add_argument('--gzip', '-gz', action='store_true',default=False, help='compress h5 output')
+p8=parser.add_argument('--chunks', '-k', default=None, help='chunk shape when saving to h5 file')
 
 FLAGS=parser.parse_args()
 
@@ -85,6 +87,7 @@ def hepmc_to_hdf5(FLAGS):
     chunks=FLAGS.chunks
     nevents=FLAGS.nevents
     nparts=FLAGS.nparts
+    pandas=FLAGS.pandas
     dim=0 
 
     events=[] 
@@ -163,19 +166,23 @@ def hepmc_to_hdf5(FLAGS):
 
     shuffle(events_0pad)
     data=np.stack(events_0pad)
-
     print('...extracted data shape : {}'.format(data.shape))
-    print('...shuffling and saving events to {}'.format(output)) 
-    with h5py.File(output,'w', libver='latest') as f:
-        dset=f.create_dataset('data',data=data, chunks=chunks, compression=gzip)
-        dset.attrs.create(name='shape',data=data.shape)
-        dset.attrs.create(name='nevents',data=nevents)
-        dset.attrs.create(name='nparticles',data=nparts)
-        dset.attrs.create(name='nsignal',data=int(np.sum(labels)))
-        dset.attrs.create(name='nbackgr',data=int(len(labels)-np.sum(labels)))
-        dset.attrs.create(name='dtype',data=dtype)
-        dset.attrs.create(name='hepmc',data=input_files)
-        dset.attrs.create(name='truth',data=truth_labels)
+    print('...shuffling and saving events to {}'.format(output))
+
+    if pandas:
+        df=pd.DataFrame(data)
+        df.to_hdf(output, key='df', mode='w')
+    else:
+        with h5py.File(output,'w', libver='latest') as f:
+            dset=f.create_dataset('data',data=data, chunks=chunks, compression=gzip)
+            dset.attrs.create(name='shape',data=data.shape)
+            dset.attrs.create(name='nevents',data=nevents)
+            dset.attrs.create(name='nparticles',data=nparts)
+            dset.attrs.create(name='nsignal',data=int(np.sum(labels)))
+            dset.attrs.create(name='nbackgr',data=int(len(labels)-np.sum(labels)))
+            dset.attrs.create(name='dtype',data=dtype)
+            dset.attrs.create(name='hepmc',data=input_files)
+            dset.attrs.create(name='truth',data=truth_labels)
 
     print('...done!')
     print('...'+ elapsed_time(t))
