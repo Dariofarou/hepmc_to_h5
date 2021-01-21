@@ -23,13 +23,13 @@ hepmc_to_hdf5.py files [files ...] [-h] [--truth TRUTH ...] [--nevents NEVENTS .
 Optional arguments:
 
  - ```--help,-h``` : help message and exit
- - ```--truth,-t``` : give truth level bit for each hepmc file
- - ```--nevents,-N``` : give max number of events for each hepmc file
- - ```--nparts,-n``` : give max number of leading particles per event to be stored with zero-padding
+ - ```--truth,-t``` : give truth level bit per input file
+ - ```--nevents,-N``` : give max number of events per input file
+ - ```--nparts,-n``` : give max number of leading particles per event with zero-padding
  - ```--output,-o``` : give name of output file
  - ```--dtype,-d``` : select the data representation: ```COMPACT```, ```PTEPM```, ```EP``` 
- - ```--gzip, -gz``` : compress h5 output
- - ```--chunks,-k``` : give data chunk shape when saving to h5 file
+ - ```--gzip, -gz``` : compress h5 output 
+ - ```--chunks,-k``` : give data chunk shape when saving to h5 file (may be necessary for very large event files)
 
 # Example:
 
