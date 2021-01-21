@@ -21,7 +21,8 @@ Event arrays are zero padded to a fixed size *M*, set by the event in the sample
 ```bash
 hepmc_to_hdf5.py files [files ...] [-h] [--truth TRUTH ...] [--output OUTPUT] [--dtype DTYPE]
 ```
-Example: to extract particles with *(pT, η, φ, M)* coordinates from three hepmc files
+# Example:
+To extract particles with *(pT, η, φ, M)* coordinates from three hepmc files
 - *events_1.hepmc* (signal process)
 - *events_2.hepmc* (background process)
 - *events_3.hepmc* (another background process) 
