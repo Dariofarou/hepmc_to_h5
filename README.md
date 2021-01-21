@@ -37,4 +37,4 @@ saves into a single file *events.h5*:
 - 100 *background* events from *events_2.hepmc*
 - 120 *background* events from *events_3.hepmc*
 
-in the format *(pT, η, φ, M)*. To omit truth level information from the output, simply drop the argument ```--truth``` above. If the argument ```--nevents``` is not called, then *all* events from each hepmc file are saved.  
+in the format *(pT, η, φ, M)*. To omit truth level information from the output, simply drop the ```--truth``` argument from above. If the argument ```--nevents``` is not called, then *all* events from each hepmc file are saved.  
