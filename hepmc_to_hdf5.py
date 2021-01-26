@@ -135,6 +135,22 @@ def hepmc_to_hdf5(FLAGS):
                 len_dtype=4
                 del compact_list, ep_list 
 
+            # TODO:  add dtypes including particle ID  of form (pid, pT, η, φ, pid, pT, η, φ, ...)
+            # if dtype=='ICOMPACT':
+            #     ev=compact_list
+            #     len_dtype=3
+            #     del ptepm_list, ep_list
+
+            # if dtype=='IEP':
+            #     ev=ep_list
+            #     len_dtype=4
+            #     del compact_list, ptepm_list
+
+            # if dtype=='IPTEPM':
+            #     ev=ptepm_list
+            #     len_dtype=4
+            #     del compact_list, ep_list 
+
             ev.sort(reverse=True)   # sorts particles by decreasing 'pT' for COMPACT/PTEPM, and by decreasing 'E' for EP
             
             if 0<nparts<len(ev):
